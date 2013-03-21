@@ -1,0 +1,7 @@
+
+game-server/node_modules/*
+.DS_Store
+
+web-server/node_modules/*
+
+.idea/*

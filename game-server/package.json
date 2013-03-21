@@ -1,0 +1,11 @@
+{
+    "name":"ChatServer",
+    "version":"0.0.1",
+    "private":false,
+    "dependencies":{
+        "pomelo":"0.3.3",
+        "mysql": ">=2.0",
+        "generic-pool":">=1.0.9"
+    }
+}
+
