@@ -20,10 +20,11 @@ app.configure('production|development', 'connector', function(){
 // app configure
 app.configure('production|development', function() {
     // route configures
-    app.route('chat', routeUtil.chat);
 
+    //app.route('chat', routeUtil.chat);
+    console.log('app.getBase() --'+app.getBase() );
     // filter configures
-    app.loadConfig('mysql', app.getBase() + '/../shared/config/mysql.json');
+    app.loadConfig('mysql', app.getBase() + '/config/mysql.json');
 
     app.filter(pomelo.timeout());
 });
