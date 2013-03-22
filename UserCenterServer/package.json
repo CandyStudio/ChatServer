@@ -2,6 +2,8 @@
     "name":"UserCenterLogin",
     "version":"0.0.1",
     "dependencies": {
-        "express": "3.0.6"
+        "express": "3.0.6",
+        "mysql": ">=2.0",
+        "generic-pool":">=1.0.9"
     }
 }
