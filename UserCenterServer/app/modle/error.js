@@ -13,9 +13,9 @@
  * @param msg 错误描述
  * @constructor
  */
-var ErrorCode = function(code,msg){
+var error = function (code, msg) {
     this.errorcode = code;
     this.desc = msg;
 };
 
-moduld.exports = ErrorCode;
+module.exports = error;

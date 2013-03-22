@@ -7,11 +7,18 @@
  */
 
 module.exports = {
+    OK: 200,
+    FAIL: 500,
     ErrorCode: {
         PASSWORD_ERROR: 0,
         NO_USERNAME: 1,
         ALREADY_HAS_USER: 2,
         ALREADY_LOGIN: 3,
         PARAM_ERROR: 4
+    },
+    UserRole: {
+        DEFAULT: 0,
+        REGISTER: 1,
+        ADMIN: 3
     }
 };

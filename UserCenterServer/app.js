@@ -12,7 +12,7 @@ var express = require('express');
 var http = require('http');
 var app = express();
 
-app.configure(function(){
+app.configure(function () {
     app.set('port', 3000);
 
     app.locals.pretty = true;
@@ -21,13 +21,19 @@ app.configure(function(){
     app.use(express.methodOverride());
 });
 
-app.configure('development', function(){
+
+app.configure('development', function () {
     app.use(express.errorHandler());
 });
+app.configure('development', function () {
+    var mysql = require('./app/dao/mysql/mysql');
+//Init mysql
+    mysql.init();
+});
+require('./app/router')(app);
 
-require('./router')(app);
 
-http.createServer(app).listen(app.get('port'), function(){
+http.createServer(app).listen(app.get('port'), function () {
     console.log("Express server listening on port " + app.get('port'));
 });
 
