@@ -2,7 +2,7 @@
     "development": {
         "host": "127.0.0.1",
         "port": "3306",
-        "database": "ChatDemo",
+        "database": "UserCenterDemo",
         "user": "root",
         "password": "123456"
     },
@@ -10,7 +10,7 @@
     "production": {
         "host": "127.0.0.1",
         "port": "3306",
-        "database": "ChatDemo",
+        "database": "UserCenterDemo",
         "user": "root",
         "password": "123456"
     }
