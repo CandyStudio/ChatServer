@@ -37,15 +37,13 @@ roomDao.createRoom = function  (name,create,cb) {
  */
 roomDao.getAllRoom = function  (cb) {
 	var sql = 'select * from t_sys_room ';
-    pomelo.app.get('dbclient').query(sql, null, function(err, res) {
-
+    var args = [];
+    pomelo.app.get('dbclient').query(sql, args, function(err, res) {
 		if (err !== null) {
 			utils.invokeCallback(cb, err, null);
 		} else {
-			if ( !! res && res.length === 1) {
-
+			if ( !! res) {
 				utils.invokeCallback(cb, null, res);
-
 			} else {
 				utils.invokeCallback(cb, null, []);
 			}

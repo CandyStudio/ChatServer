@@ -9,6 +9,7 @@ var ChatRemote = function(app) {
 
 //roomDao
 var roomDao = require('../../../dao/roomDao');
+var consts = require('../../../consts/consts');
 /**
  * Add user into chat channel.
  *
@@ -39,8 +40,10 @@ ChatRemote.prototype.add = function(uid, username,sid, name, flag, cb) {
         channel.usercount++;
         console.log(channel.usercount);
     }
-
-    cb(this.get(name, flag));
+    cb({
+        code:200,
+        userList : this.get(name, flag)
+    });
 };
 
 /**
@@ -106,18 +109,63 @@ ChatRemote.prototype.kick = function(uid, user,sid, name) {
     channel.pushMessage(param);
 };
 
+/**
+ *
+ * @param cb
+ */
 ChatRemote.prototype.queryRooms = function(cb){
-    var rooms = roomDao.getAllRoom(function(res){
-        if(!! res ){
-            cb({
-                code:consts.FAIL,
-                error:new Error(consts.ErrorCode.ROOM_SELECT_ERROR,"查询房间列表失败")
-            });
-        }else{
-             cb({
-                 code:consts.OK,
-                 rooms:res
-             });
+    //why???
+    var c1 = this.channelService.getChannel('1', true);
+    var c2 = this.channelService.getChannel('2', true);
+    c1.channelname = 'name1';
+    c2.channelname = 'name2';
+
+
+    var channels = this.channelService.getChannels();
+    var rooms = [];
+    for(var c in channels){
+        var ch = channels[c];
+        console.log(ch.getMembers());
+        console.log(ch.getMembers().length);
+        console.log(ch.usercount);
+        if(!!ch.usercount)
+        {
+            ch.usercount = ch.getMembers().length;
         }
+        else{
+            ch.usercount = 0;
+        }
+        rooms.push({
+            id: c,
+            name: ch.channelname,
+            count:ch.usercount
+        });
+    }
+
+    cb({
+        code:200,
+        roomlist:rooms
     });
 };
+
+ChatRemote.prototype.createRoom = function(channel,userid,cb){
+    roomDao.createRoom(channel,userid,function(err, roomid){
+        if ( !! err) {
+            cb(null, {
+                code: 500,
+                err: err
+            });
+        }else {
+            console.log("-------");
+            //TODO creatChannle is undefined
+            var channel = this.channelService.createChannel(roomid);
+            console.log('创建房间:channel:' + channel);
+            channel.channelname = channel;
+            cb(null, {
+                code: 200,
+                roomid: roomid,
+                count:0
+            });
+        }
+    });
+} ;
