@@ -1,8 +1,11 @@
 
 game-server/node_modules/*
+game-server/log/*
 .DS_Store
 
 web-server/node_modules/*
 
 .idea/*
 UserCenterServer/node_modules/*
+
+

@@ -8,7 +8,6 @@ var consts = require('../consts/consts');
 var utils = require('../util/utils');
 var chatDao = module.exports;
 var pomelo = require('pomelo');
-var logger = require('pomelo-logger').getLogger(__filename);
 
 /**
  * 向数据库 插入一条 聊天记录
