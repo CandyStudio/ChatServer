@@ -1,6 +1,6 @@
 var dispatcher = require('../../../util/dispatcher');
 var consts = require('../../../consts/consts');
-var error = require('../..../model/error');
+var error = require('../../../model/error');
 module.exports = function (app) {
     return new Handler(app);
 };

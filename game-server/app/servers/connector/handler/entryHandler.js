@@ -7,6 +7,8 @@ var Handler = function (app) {
 };
 var handler = Handler.prototype;
 
+var consts = require('../../../consts/consts');
+var error = require('../../../model/error');
 /**
  * New client entry chat server.
  *
@@ -66,7 +68,8 @@ var onUserLeave = function (app, session) {
  * @param {Object} session
  * @param {Function} callback
  */
-handler.entry = function (msg, session, cb) {
+handler.entry = function (msg, session, next) {
+    var self = this;
     var userid = msg.userid;
     var token = msg.token;
     if (!userid && !token) {
@@ -79,15 +82,29 @@ handler.entry = function (msg, session, cb) {
         var auth = require('../../../../../shared/token');
         var key = require('../../../../../shared/config/keys');
         var info = auth.parse(token, key.secret);
+        console.log("info--->>"+info);
         var timestamp = info.timestamp;
+        console.log("timestamp--->>"+timestamp);
         if (userid === info.uid && !!timestamp) {
             var nowTimestamp = new Date().getTime();
-            console.log('dang qian:' + nowTimestamp, +'fa guolai de:' + timestamp);
-            if (nowTimestamp > timestamp && nowTimestamp - timestamp <= consts.AUTH_TIME) {
+            console.log('dang qian:' + nowTimestamp +'fa guolai de:' + timestamp);
+            if (nowTimestamp > timestamp && (nowTimestamp - timestamp) <= consts.AUTH_TIME) {
                 //TODO 进入大厅
                 console.log('验证成功');
+                //进入房间方法
+//                var rooms ;
+//                self.app.rpc.chat.chatRemote.queryRooms(function(data){
+//                    if(data.code!=200){
+//                        console.log("查询房间列表失败");
+//                        return;
+//                    }else{
+//                        var rooms = data.rooms;
+//                        console.log(rooms[0].room_id);
+//                    }
+//                });
                 next(null, {
                     code: consts.OK
+                    //进入房间
 
                 });
             } else {
