@@ -60,7 +60,7 @@ handler.entry = function (msg, session, cb) {
         });
         return;
     } else {
-        var res = dispatcher.dispatch(uid, connectors);
+        var res = dispatcher.dispatch(userid, connectors);
         next(null, {
             code: 200,
             host: res.host,
