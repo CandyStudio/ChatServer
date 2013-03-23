@@ -9,3 +9,7 @@ web-server/node_modules/*
 UserCenterServer/node_modules/*
 
 
+
+*.log
+
+game-server/config/servers.json

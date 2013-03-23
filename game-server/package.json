@@ -4,8 +4,11 @@
     "private":false,
     "dependencies":{
         "pomelo":"0.3.3",
+        "log4js": ">= 0.4.1",
         "mysql": ">=2.0",
-        "generic-pool":">=1.0.9"
+        "crc": ">=0.0.1",
+        "generic-pool":">=1.0.9",
+        "pomelo-logger": "0.0.2"
     }
 }
 

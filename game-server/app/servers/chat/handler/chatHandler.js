@@ -129,3 +129,38 @@ handler.send = function (msg, session, next){
     }) ;
 };
 
+
+/**
+ *退出房间 API
+ *
+ *@param {Object}msg   userid,username
+ *@param {Object}session
+ *@param {Function} cb
+ */
+handler.quit = function (msg, session, cb) {
+    var channel = this.app.get('channelService').getChannel(session.get('rid'), false);
+    var username = msg.username;
+    var userid = msg.userid;
+    var sid = this.app.get('serverId');
+    console.log(username + '离开');
+    if (!!channel) {
+        var id = userid + '*' + username;
+        console.log('id:' + id);
+        console.log('sid:' + sid);
+        channel.leave(id, sid);
+    }
+    else {
+        console.log('离开没有找到channel');
+    }
+    var user = session.get('user');
+    var param = {
+        route: 'onLeave',
+        username: username,
+        userid: user.id
+    };
+    channel.pushMessage(param);
+
+    cb(null, {
+        code: 200
+    });
+};

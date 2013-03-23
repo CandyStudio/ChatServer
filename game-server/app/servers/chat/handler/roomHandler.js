@@ -15,7 +15,7 @@ var Handler = function(app) {
 var handler = Handler.prototype;
 
 var chatRemote = require('../remote/chatRemote');
-var roomDao = require('../../../dao/chatDao');
+var roomDao = require('../../../dao/roomDao');
 
 /**
  *  进入房间
@@ -94,5 +94,26 @@ handler.quit = function(msg, session, cb) {
     chatRemote.kick(session, uid, session.get('user'), sid, session.get('rid'), null);
     cb(null, {
         code: 200
+    });
+};
+
+
+/**
+ *
+ * @param  {Object}   msg     request message
+ * @param  {Object}   session current session object
+ * @param  {Function} cb    next stemp callback
+ */
+handler.queryRoomList = function(msg, session, cb){
+    roomDao.getAllRoom(function(err, res){
+        if (!!err) {
+            next(null, {
+                code: 500,
+                err: err
+            });
+        } else{
+            var room = res[0];
+            console.log("room-->>"+room);
+        }
     });
 };
