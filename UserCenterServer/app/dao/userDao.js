@@ -49,7 +49,7 @@ userDao.getUserInfo = function (username, cb) {
  *@return {int} 用户id
  */
 userDao.createUser = function (username, pwd, role, devicetoken, macaddress, cb) {
-    var sql = 'insert into t_sys_user (user_name,user_pwd,user_role,devicetoken,macaddress) values(?,?,?,?)';
+    var sql = 'insert into t_sys_user (user_name,user_pwd,user_role,devicetoken,macaddress) values(?,?,?,?,?)';
     var args = [username, pwd, role, devicetoken, macaddress];
 
     mysql.query(sql, args, function (err, res) {
@@ -80,6 +80,33 @@ userDao.updateDevicetoken = function (devicetoken, macaddress, id, cb) {
         } else {
 
             cb(null, res.insertId);
+        }
+    });
+};
+
+/**
+ * 获得用户信息
+ * @param {String} macaddress Mac地址
+ * @param {Number} role  用户角色
+ * @param {Function} cb  回调函数
+ */
+userDao.getUserInfoByMac = function (macaddress, role, cb) {
+    var sql = 'select * from t_sys_user where macaddress = ? and user_role = ?';
+    var args = [macaddress, role];
+
+
+    mysql.query(sql, args, function (err, res) {
+
+        if (err !== null) {
+            cb(new Error(err.number, err.message), null);
+        } else {
+            if (!!res && res.length === 1) {
+
+                cb(null, res);
+
+            } else {
+                cb(null, []);
+            }
         }
     });
 };
