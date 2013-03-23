@@ -12,7 +12,7 @@
 var mysql = require('./mysql/mysql');
 var userDao = module.exports;
 
-var Error = require('../modle/error');
+var Error = require('../model/error');
 /**
  *获得用户信息
  *@param {String} 用户名
@@ -70,8 +70,8 @@ userDao.createUser = function (username, pwd, role, devicetoken, macaddress, cb)
  * @param {String} macaddress mac地址
  */
 userDao.updateDevicetoken = function (devicetoken, macaddress, id, cb) {
-    var sql = 'UPDATE t_sys_user SET devicetoken=? macaddress=? where id =?';
-    var args = [devicetoken, macadress, id];
+    var sql = 'UPDATE t_sys_user SET devicetoken=? , macaddress=? where id =?';
+    var args = [devicetoken, macaddress, id];
 
     mysql.query(sql, args, function (err, res) {
         if (err !== null) {

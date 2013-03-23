@@ -1,9 +1,9 @@
-module.exports = function(app) {
-  return new Handler(app);
+module.exports = function (app) {
+    return new Handler(app);
 };
 
-var Handler = function(app) {
-  this.app = app;
+var Handler = function (app) {
+    this.app = app;
 };
 var handler = Handler.prototype;
 
@@ -14,18 +14,18 @@ var handler = Handler.prototype;
  * @param  {Object}   session current session object
  * @param  {Function} next    next stemp callback
  * @return {void}
-*/
+ */
 //    Handler.prototype.entry = function(msg, session, next) {
 //    next(null, {code: 200, msg: 'game server is ok.'});
 //    };
 
-handler.enter = function(msg, session, next) {
+handler.enter = function (msg, session, next) {
     var self = this;
     var rid = 0;
-    var uid = "test" + '*' + rid ;
+    var uid = "test" + '*' + rid;
     var sessionService = self.app.get('sessionService');
     //duplicate log in
-    if( !! sessionService.getByUid(uid)) {
+    if (!!sessionService.getByUid(uid)) {
         next(null, {
             code: 500,
             error: true
@@ -35,14 +35,14 @@ handler.enter = function(msg, session, next) {
 
     session.bind(uid);
     session.set('rid', rid);
-    session.push('rid', function(err) {
-        if(err) {
+    session.push('rid', function (err) {
+        if (err) {
             console.error('set rid for session service failed! error is : %j', err.stack);
         }
     });
     session.on('closed', onUserLeave.bind(null, self.app));
-    next(null,{
-        res:"success"
+    next(null, {
+        res: "success"
     });
     //put user into channel
 //    self.app.rpc.chat.chatRemote.add(session, uid, self.app.get('serverId'), rid, true, function(users){
@@ -53,9 +53,56 @@ handler.enter = function(msg, session, next) {
 };
 
 
-var onUserLeave = function(app, session) {
-    if(!session || !session.uid) {
+var onUserLeave = function (app, session) {
+    if (!session || !session.uid) {
         return;
     }
 //    app.rpc.chat.chatRemote.kick(session, session.uid, app.get('serverId'), session.get('rid'), null);
+};
+
+/**
+ * 连接前段服务器
+ * @param {Object} msg   userid,token
+ * @param {Object} session
+ * @param {Function} callback
+ */
+handler.entry = function (msg, session, cb) {
+    var userid = msg.userid;
+    var token = msg.token;
+    if (!userid && !token) {
+        cb(null, {
+            code: consts.FAIL,
+            error: new error(consts.ErrorCode.PARAM_ERROR, '参数错误')
+        });
+        return;
+    } else {
+        var auth = require('../../../../../shared/token');
+        var key = require('../../../../../shared/config/keys');
+        var info = auth.parse(token, key.secret);
+        var timestamp = info.timestamp;
+        if (userid === info.uid && !!timestamp) {
+            var nowTimestamp = new Date().getTime();
+            console.log('dang qian:' + nowTimestamp, +'fa guolai de:' + timestamp);
+            if (nowTimestamp > timestamp && nowTimestamp - timestamp <= consts.AUTH_TIME) {
+                //TODO 进入大厅
+                console.log('验证成功');
+                next(null, {
+                    code: consts.OK
+
+                });
+            } else {
+                next(null, {
+                    code: consts.FAIL,
+                    error: new error(consts.ErrorCode.AUTH_TIMEOUT, '验证超时')
+                });
+            }
+        } else {
+            next(null, {
+                code: consts.FAIL,
+                error: new error(consts.ErrorCode.AUTH_FILED, '验证失败')
+            });
+        }
+
+
+    }
 };

@@ -6,7 +6,7 @@
  * To change this template use File | Settings | File Templates.
  */
 
-var Error = require('./modle/error');
+var Error = require('./model/error');
 var Const = require('./Consts/const');
 module.exports = function (app) {
 
@@ -36,6 +36,7 @@ module.exports = function (app) {
                 }
                 else {
                     var user = users[0];
+                    console.log(user);
                     if (user.user_pwd !== password) {
                         res.send(new Error(Const.ErrorCode.PASSWORD_ERROR, '密码错误'), Const.FAIL);
                         return;
@@ -47,17 +48,21 @@ module.exports = function (app) {
                         }
                         var secret = require('../../shared/config/keys');
                         var token = require('../../shared/token').create(user.id, Date.now(), secret.secret);
-
-                        if (user.devicetoke !== devicetoken || user.macaddress !== macaddress) {
-                            userDao.updateDevicetoken(devicetoken, macaddress, function (err, res) {
+                        console.log('token yuan:' + user.devicetoken + 'xian:' + devicetoken);
+                        console.log('mac yuan:' + user.macaddress + 'xian:' + macaddress);
+                        if (user.devicetoken !== devicetoken || user.macaddress !== macaddress) {
+                            console.log('更新');
+                            userDao.updateDevicetoken(devicetoken, macaddress, user.id, function (err, result) {
                                 if (!!err) {
                                     res.send(err, Const.FAIL);
+                                    return;
                                 } else {
                                     res.send({
                                         route: 'login',
                                         userid: user.id,
                                         token: token
                                     }, Const.OK);
+                                    return;
                                 }
                             });
                         }
@@ -67,6 +72,7 @@ module.exports = function (app) {
                                 userid: user.id,
                                 token: token
                             }, Const.OK);
+                            return;
                         }
 
 
@@ -89,7 +95,7 @@ module.exports = function (app) {
         if (!username || !password || !isguest) {
             res.send(new Error(Const.ErrorCode.PARAM_ERROR, '参数错误'), Const.FAIL);
             return;
-        } else if (isguest === 1 && macaddress === '') {
+        } else if (isguest === '1' && macaddress === '') {
             res.send(new Error(Const.ErrorCode.PARAM_ERROR, '参数错误'), Const.FAIL);
             return;
         }
@@ -101,7 +107,7 @@ module.exports = function (app) {
                 return;
             } else {
                 if (users.length === 0) {
-                    if (isguest === 0) {
+                    if (isguest === '0') {
                         userDao.createUser(username, password, role, devicetoken, macaddress, function (err, userid) {
                             if (!!err) {
                                 res.send(err, Const.FAIL);
@@ -167,7 +173,8 @@ module.exports = function (app) {
                             res.send({
                                 route: 'guest',
                                 userid: userid,
-                                token: token
+                                token: token,
+                                username: username
                             });
                         }
                     });
