@@ -60,9 +60,17 @@ handler.entry = function (msg, session, cb) {
         });
         return;
     } else {
+        // get all connectors
+        var connectors = this.app.getServersByType('connector');
+        if (!connectors || connectors.length === 0) {
+            cb(null, {
+                code: consts.FAIL
+            });
+            return;
+        }
         var res = dispatcher.dispatch(userid, connectors);
-        next(null, {
-            code: 200,
+        cb(null, {
+            code: consts.OK,
             host: res.host,
             port: res.clientPort
         });
