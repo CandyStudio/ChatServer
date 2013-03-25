@@ -11,7 +11,7 @@ module.exports = {
         GUEST_FORBIDDEN: 5,
         AUTH_FILED: 6,
         AUTH_TIMEOUT: 7,
-        ROOM_SELECT_ERROR:8
+        ROOM_SELECT_ERROR: 8
     },
     UserRole: {
         DEFAULT: 0,
@@ -19,6 +19,6 @@ module.exports = {
         ADMIN: 3
     },
     GUESTPASSWORD: '123456',
-    AUTH_TIME: 50000000
+    AUTH_TIME: 5000
 
 };

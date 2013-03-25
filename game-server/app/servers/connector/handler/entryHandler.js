@@ -53,13 +53,19 @@ handler.enter = function (msg, session, next) {
 //        });
 //    });
 };
-
-
+/**
+ * 离开
+ * @param app
+ * @param session
+ */
 var onUserLeave = function (app, session) {
     if (!session || !session.uid) {
         return;
     }
-//    app.rpc.chat.chatRemote.kick(session, session.uid, app.get('serverId'), session.get('rid'), null);
+    var onlineuser = app.get('onlineuser');
+    app.set('onlineuser', --onlineuser);
+    app.rpc.chat.chatRemote.kick(session, session.uid, app.get('serverId'), session.get('roomid'), null);
+    console.log('监听 用户离开');
 };
 
 /**
@@ -83,24 +89,31 @@ handler.entry = function (msg, session, next) {
         var key = require('../../../../../shared/config/keys');
         var info = auth.parse(token, key.secret);
         var timestamp = info.timestamp;
-        if (userid === info.uid && !!timestamp) {
+        if (userid == info.uid && !!timestamp) {
             var nowTimestamp = new Date().getTime();
-            console.log('dang qian:' + nowTimestamp +'fa guolai de:' + timestamp);
             if (nowTimestamp > timestamp && (nowTimestamp - timestamp) <= consts.AUTH_TIME) {
+
                 //TODO 进入大厅
                 console.log('验证成功');
                 //进入房间方法
-                var rooms = [] ;
-                self.app.rpc.chat.chatRemote.queryRooms(session,function(data){
-                    if(data.code!=200){
+                var rooms = [];
+                self.app.rpc.chat.chatRemote.queryRooms(session, function (data) {
+                    if (data.code != 200) {
                         console.log("查询房间列表失败");
+                        next(null, {
+                            code: consts.Fail
+                        });
                         return;
-                    }else{
+                    } else {
+                        session.on('closed', onUserLeave.bind(null, self.app));
+                        var onlineuser = self.app.get('onlineuser');
+                        self.app.set('onlineuser', ++onlineuser);
                         rooms = data.roomlist;
+                        session.bind(userid);
                         next(null, {
                             code: consts.OK,
-                            onLineUser : 0 ,
-                            roomList: rooms
+                            onlineuser: onlineuser,
+                            roomlist: rooms
                         });
                     }
                 });
@@ -129,27 +142,29 @@ handler.entry = function (msg, session, next) {
  * @param  {Function} next    next stemp callback
  * @return {void}
  */
-handler.enterRoom = function(msg, session, next) {
+handler.enterRoom = function (msg, session, next) {
     var self = this;
-    // put user into channel
-    session.set('rid', msg.channel);
-    session.push('rid', function(err) {
+    session.set('roomid', msg.channelid);
+    session.push('roomid', function (err) {
         if (err) {
             console.error('set rid for session service failed! error is : %j', err.stack);
         }
     });
 
-    console.log(msg.userid+"--"+msg.username+"---"+msg.channel);
-    self.app.rpc.chat.chatRemote.add(session,msg.userid, msg.username,self.app.get('serverId'), msg.channel, true,function(data){
-         if(data.code!=200){
-             console.log("进入房间失败");
-             return;
-         }else{
-             next(null,{
-                roomid:msg.channel,
-                userList:data.userList
-             });
-         }
+    console.log(msg.userid + "--" + msg.username + "---" + msg.channelid);
+    self.app.rpc.chat.chatRemote.add(session, msg.userid, msg.username, self.app.get('serverId'), msg.channelid, true, function (data) {
+        if (data.code != 200) {
+            console.log("进入房间失败");
+            next(null, {
+                code: consts.FAIL
+            });
+            return;
+        } else {
+            next(null, {
+                code: consts.OK,
+                users: data.userList
+            });
+        }
     });
 };
 
@@ -160,14 +175,10 @@ handler.enterRoom = function(msg, session, next) {
  *@param {Object}session
  *@param {Function} 回调函数
  */
-handler.quit = function(msg, session, cb) {
+handler.quit = function (msg, session, cb) {
     var self = this;
-    var username = msg.username;
-    var userid = msg.userid;
-    var uid = userid + '*' + username;
-    var sid = this.app.get('serverId')
-    console.log(username + '离开');
-    self.app.rpc.chat.chatRemote.kick(session, uid, session.get('user'), sid, session.get('rid'), null);
+    self.app.rpc.chat.chatRemote.kick(session, session.uid, self.app.get('serverId'), session.get('roomid'), null);
+
     cb(null, {
         code: 200
     });
@@ -179,18 +190,18 @@ handler.quit = function(msg, session, cb) {
  * @param  {Object}   msg     request message
  * @param  {Object}   session current session object
  * @param  {Function} next    next stemp callback
- * @return {Void}
+ * @return {oid}
  */
-handler.createRoom = function(msg, session, next) {
-    var self =this;
-    self.app.rpc.chat.chatRemote.createRoom(session,msg.channel,msg.userid,function(data){
-        if(data.code!=200){
-            console.log("创建房间失败");
-            return;
-        }else{
-            next(null,{
-                roomid:data.roomid,
-                count:data.count
+handler.createRoom = function (msg, session, next) {
+    var self = this;
+    self.app.rpc.chat.chatRemote.createRoom(session, msg.channel, msg.userid, function (err, data) {
+        if (!!err) {
+            next(new Error(msg.number, msg.msg), null);
+        } else {
+            next(null, {
+                code: consts.OK,
+                channelid: data.channelid
+
             });
         }
     })

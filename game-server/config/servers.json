@@ -7,7 +7,7 @@
                 "port": 4050,
                 "clientPort": 3050,
                 "frontend": true,
-                "debug_port": 8989
+                "debug_port": 8787
             }
 
         ],

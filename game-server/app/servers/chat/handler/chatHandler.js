@@ -23,9 +23,9 @@ var handler = Handler.prototype;
  * @param  {Function} next    next stemp callback
  * @return {void}
  */
-handler.query = function (msg,session,next){
+handler.query = function (msg, session, next) {
 
-    chatDao.query(msg.userid, msg.roomid, function (err, res) {
+    chatDao.query(msg.userid, msg.channelid, function (err, res) {
         if (!!err) {
             next(null, {
                 code: 500,
@@ -48,15 +48,26 @@ handler.query = function (msg,session,next){
  * @param {Object} session
  * @param  {Function} next next stemp callback
  */
-handler.send = function (msg, session, next){
-    var rid = session.get('rid');
-    var user = session.get('user');
+handler.send = function (msg, session, next) {
+    var roomid = session.get('roomid');
+    console.log('roomid:' + roomid);
     var channelService = this.app.get('channelService');
-    var channel = channelService.getChannel(session.get('rid'), false);
+    console.log('channelService:' + channelService);
+    var channel = channelService.getChannel(roomid, false);
+    console.log('channel:' + channel);
+    var userid = session.uid;
+    console.log('userid:' + userid);
+
+    //test
+    for (var id in channel.users) {
+        console.log('userid:' + id);
+        console.log('username:' + channel.users[id]);
+    }
+
     var chat = {
-        fromuserid: user.id,
-        fromusername: user.user_name,
-        room_id: msg.roomid,
+        fromuserid: userid,
+        fromusername: channel.users[userid],
+        room_id: roomid,
         tousername: msg.target,
         cocntext: msg.content
     };
@@ -93,14 +104,14 @@ handler.send = function (msg, session, next){
                     var chat = res[0];
                     var theChat = {route: 'onChat',
                         from_user_name: chat['from_user_name'],
-                        from_user_id:chat['from_user_id'],
+                        from_user_id: chat['from_user_id'],
                         to_user_id: chat['to_user_id'],
                         to_user_name: chat['to_user_name'],
                         type: chat['type'],
                         context: chat['context'],
                         createtime: chat['createtime'],
                         room_id: chat['room_id'],
-                        tid:id
+                        tid: id
                     };
 
                     if (msg.target === '*') {
@@ -108,7 +119,7 @@ handler.send = function (msg, session, next){
 
                     }
                     else {
-                        var tuid = msg.userid + '*' + msg.target;
+                        var tuid = msg.userid;
                         var member = channel.getMember(tuid);
                         var tsid = member['sid'];
                         channelService.pushMessageByUids(theChat, [
@@ -126,7 +137,7 @@ handler.send = function (msg, session, next){
                 }
             });
         }
-    }) ;
+    });
 };
 
 
@@ -137,28 +148,26 @@ handler.send = function (msg, session, next){
  *@param {Object}session
  *@param {Function} cb
  */
-handler.quit = function (msg, session, cb) {
-    var channel = this.app.get('channelService').getChannel(session.get('rid'), false);
+handler.quitRoom = function (msg, session, cb) {
+    var channel = this.app.get('channelService').getChannel(session.get('roomid'), false);
     var username = msg.username;
     var userid = msg.userid;
     var sid = this.app.get('serverId');
     console.log(username + '离开');
     if (!!channel) {
-        var id = userid + '*' + username;
-        console.log('id:' + id);
-        console.log('sid:' + sid);
-        channel.leave(id, sid);
+        channel.leave(userid, sid);
     }
     else {
         console.log('离开没有找到channel');
     }
-    var user = session.get('user');
+
     var param = {
         route: 'onLeave',
         username: username,
-        userid: user.id
+        userid: userid
     };
     channel.pushMessage(param);
+
 
     cb(null, {
         code: 200
