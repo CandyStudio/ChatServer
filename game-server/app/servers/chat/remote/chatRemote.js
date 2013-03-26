@@ -38,6 +38,7 @@ ChatRemote.prototype.add = function (uid, username, sid, channelid, flag, cb) {
             });
             return;
         }
+        console.log('进入：userid:'+uid,' serverid:'+sid);
         channel.add(uid, sid);
         var users = channel.users;
         if (!users) {
@@ -86,6 +87,9 @@ ChatRemote.prototype.get = function (channelid, flag) {
  *
  */
 ChatRemote.prototype.kick = function (uid, sid, roomid) {
+    if(!roomid){
+        return;
+    }
     self = this;
     var channel = self.channelService.getChannel(roomid, false);
     // leave channel
@@ -107,12 +111,6 @@ ChatRemote.prototype.kick = function (uid, sid, roomid) {
  * @param cb
  */
 ChatRemote.prototype.queryRooms = function (cb) {
-    //why???
-    var c1 = this.channelService.getChannel('1', true);
-    var c2 = this.channelService.getChannel('2', true);
-    c1.channelname = 'name1';
-    c2.channelname = 'name2';
-
 
     var channels = this.channelService.channels;
     var rooms = [];

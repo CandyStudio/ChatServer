@@ -42,6 +42,24 @@ app.configure('production|development', function() {
 // start app
 app.start();
 
+
+if(app.getServerType() ==='chat'){
+
+    var roomDao = require('./app/dao/roomDao');
+    roomDao.getAllRoom(function(err,roomes){
+        var channelseervice = app.get('channelService');
+       for(var index  in roomes){
+           var room = roomes[index];
+           var channel =  channelseervice.createChannel(room.id);
+           channel.channelname = room.room_name;
+       }
+
+
+
+    });
+
+}
+
 process.on('uncaughtException', function (err) {
   console.error(' Caught exception: ' + err.stack);
 });

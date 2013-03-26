@@ -155,7 +155,10 @@ handler.quitRoom = function (msg, session, cb) {
     var sid = this.app.get('serverId');
     console.log(username + '离开');
     if (!!channel) {
+        console.log('离开：'+ channel.getMembers().length+' sid:'+sid +' userid:'+userid);
         channel.leave(userid, sid);
+        delete channel.users[userid];
+        console.log(channel.users.length +' ' + channel.getMembers().length);
     }
     else {
         console.log('离开没有找到channel');

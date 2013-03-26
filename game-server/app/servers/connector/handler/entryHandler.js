@@ -92,6 +92,17 @@ handler.entry = function (msg, session, next) {
         if (userid == info.uid && !!timestamp) {
             var nowTimestamp = new Date().getTime();
             if (nowTimestamp > timestamp && (nowTimestamp - timestamp) <= consts.AUTH_TIME) {
+                var sessionService = self.app.get('sessionService');
+                //duplicate log in
+                if ( !! sessionService.getByUid(userid)) {
+                    next(null, {
+                        code: consts.FAIL,
+                        error:new error(consts.ErrorCode.ALREADY_LOGIN,'重复登陆')
+
+                    });
+                    return;
+                }
+
 
                 //TODO 进入大厅
                 console.log('验证成功');
@@ -176,8 +187,7 @@ handler.enterRoom = function (msg, session, next) {
  *@param {Function} 回调函数
  */
 handler.quit = function (msg, session, cb) {
-    var self = this;
-    self.app.rpc.chat.chatRemote.kick(session, session.uid, self.app.get('serverId'), session.get('roomid'), null);
+    this.app.rpc.chat.chatRemote.kick(session, session.uid, this.app.get('serverId'), session.get('roomid'), null);
 
     cb(null, {
         code: 200
@@ -205,4 +215,33 @@ handler.createRoom = function (msg, session, next) {
             });
         }
     })
+};
+
+
+/**
+ *
+ * @param msg
+ * @param session
+ * @param cb
+ */
+handler.refreshRoomList = function(msg,session,cb){
+    self = this;
+    var rooms = [];
+    self.app.rpc.chat.chatRemote.queryRooms(session, function (data) {
+        if (data.code != 200) {
+            console.log("查询房间列表失败");
+            cb(null, {
+                code: consts.Fail
+            });
+            return;
+        } else {
+            var onlineuser = self.app.get('onlineuser');
+            rooms = data.roomlist;
+            cb(null, {
+                code: consts.OK,
+                onlineuser: onlineuser,
+                roomlist: rooms
+            });
+        }
+    });
 };
